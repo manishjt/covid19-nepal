@@ -15,12 +15,11 @@ Findings:
 * Monthly  number of global flight bookings, daily number of domestic passengers recorded by location-based services of Tencent databae, domestic passenger volumes from and to Wuhan during Spring fesival estimated by Wuhan Transportation Management Bureau
 
 * Used SEIR model to simulate the epidemic 
-![Equations used:](./equation_lancethku.png)
-S(t), E(t), I(t), and R(t) were the number of susceptible, latent, infectious, and removed individuals at time t; DE and DI were the mean latent (assumed to be the same as incubation) and infectious period (equal to the serial interval minus the mean latent period4
+![](https://github.com/manishjt/covid19-nepal/edit/master/references/equations_lancethku.png?raw=true)S(t), E(t), I(t), and R(t) were the number of susceptible, latent, infectious, and removed individuals at time t; DE and DI were the mean latent (assumed to be the same as incubation) and infectious period (equal to the serial interval minus the mean latent period4
 ); R0 was the basic reproductive number; z(t) was the zoonotic force of infection equal to 86 cases per day in the baseline scenario before market closure on Jan 1, 2020, and equal to 0 thereafter. The cumulative number of infections and cases that had occurred in Greater Wuhan up to time t was obtained from the SEIR model.
 
 * Assumed that travel behavior was not affected by disease and hence process  international case exportation occured according to a non-homogeneous process with rate lambda
-[Equations used:](./travel_lancethku.png)
+![](https://github.com/manishjt/covid19-nepal/blob/master/references/travel_lancethku.png "Figure 2")
 
 
 
