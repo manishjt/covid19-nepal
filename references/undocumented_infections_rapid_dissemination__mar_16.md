@@ -7,12 +7,12 @@ doi: https://doi.org/10.1101/2020.02.14.20023127
 # Summary
 The summary below focusses more on the method and less so on the results and coclusions. Please let me (Biswas Sharma) know if you have questions or comments.
 
-## With the rationale that undocumented infections 
+* With the rationale that undocumented infections 
 	* often have symptoms that are mild, limited, or absent,
 	* hence go unrecognized, and 	
 	* can expose a far greater portion of population to virus (compared to that by documented infections)
 
-## Estimate:
+* Estimate:
 	1. **fraction** of *undocumented* infections (prior to Wuhan travel shutdown)
 		Results:
 		* 86% of all infections
@@ -25,7 +25,7 @@ The summary below focusses more on the method and less so on the results and coc
 		* R<sub>0</sub> ~ 2.23 ([1.77-3.00]) before travel restrictions and control measures
 
 	
-## By using:
+* By using:
 	* **observations** (within China) of:
 		1. *reported* infections 
 		2.  spread
@@ -91,7 +91,7 @@ The summary below focusses more on the method and less so on the results and coc
 				
 
 		
-## Wih conclusions:
+* Wih conclusions:
 	* majority of infections undocumented
 	* substantial contribution of undocumentd infections in virus transmission
 	* reduction of overall infection associated with:
