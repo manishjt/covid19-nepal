@@ -39,7 +39,8 @@ The summary below focusses more on the method and less so on the results and coc
 				* 375 nodes (Chinese cities)
 			* dynamic
 				* simulates spatio-temporal dynamics
-			* metapopulation structure as in Fig. 1, including:
+			* metapopulation structure as in Fig. 1:
+			![](https://github.com/manishjt/covid19-nepal/blob/master/references/li_et_al__metapopulation_structure.PNG "Figure 2")
 			* **4 model state variables** corresponding to each node, *i*:
 				* susceptible (*S</sub>i<sub>*)
 				* exposed (*E<sub>i</sub>*)
@@ -88,9 +89,8 @@ The summary below focusses more on the method and less so on the results and coc
 			* IF-EAKF (iterated filter-ensemble adjustment Kalman filter) framework
 			* **Infer 6 model parameters** (simultaneously while estimating above four state variables): *Z* *D* *\mu*, *\beta*, *\alpha*, *\theta*
 			* Best-fitting model-inference posterior identified by **log-likelihood**
-				
 
-		
+
 * Wih conclusions:
 	* majority of infections undocumented
 	* substantial contribution of undocumentd infections in virus transmission
