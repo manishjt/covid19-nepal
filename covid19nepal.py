@@ -1,3 +1,4 @@
+from __future__ import division, print_function
 """
 Author: Manish Jung Thapa, ETH Zurich
 please leave the line above if you want to use or modify this code!
@@ -6,7 +7,6 @@ Checkout 10.1103/PhysRevE.75.056107 for more details on the model
 """
 __author__ = 'Manish J. Thapa'
 
-from __future__ import division, print_function
 
 import numpy as np
 import networkx as nx
@@ -16,14 +16,16 @@ from scipy.special import erf
 from itertools import count
 import shapefile as shp
 import seaborn as sns
-from nodesdata import Nodes
-from linksdata import Links
+from road_data import Nodes, Links
+# from nodesdata import Nodes
+# from linksdata import Links
 
 class diseasespread():
     """parameters for the model"""
-    def __init__(self, nlist, elist, tau, sigma=25, alpha=0.1,beta=0.01,theta=10,a=4.0,b=3.0): #one needs to find a good paramter such that ODEs become solvable, and yield physically reliable solutions
+    def __init__(self, nlist, elist, tau, weights, sigma=25, alpha=0.1,beta=0.01,theta=10,a=4.0,b=3.0): #one needs to find a good paramter such that ODEs become solvable, and yield physically reliable solutions
         self.elist=elist
         self.nlist=nlist
+        self.weights=weights
         self.graph=nx.Graph()
         self.graph.add_edges_from(self.elist)
         self.graph.add_nodes_from(self.nlist)
@@ -78,7 +80,7 @@ class diseasespread():
                 dxdt[i] = -x[i] / self.tau[i]
             else:
                 xj=x[np.array(self.neighbors(i+1))-1]
-                dxdt[i] = -x[i] / self.tau[i] + self.sigmoid(np.sum(xj * np.array(self.M(i + 1)) * np.exp(-self.beta * np.array(self.Delay(i + 1)),dtype=float) / np.array((self.f(i + 1)),dtype=float)))
+                dxdt[i] = -x[i] / self.tau[i] + self.sigmoid(np.sum(xj * np.array(self.weights[i + 1]) * np.exp(-self.beta * np.array(self.Delay(i + 1)),dtype=float) / np.array((self.f(i + 1)),dtype=float)))
         return dxdt
 
 #create an object of Links
@@ -89,17 +91,19 @@ elist=linkobject.linktuples
 nodeobject=Nodes()
 coord, labels=nodeobject.nodesdict()
 
+weights=nodeobject.weights()
+
 if __name__ == "__main__":
-    N=38
+    N=31
     assert N == len(coord)
     nlist=np.arange(N,dtype=int)+1
     nlist=nlist.tolist()
     taulist=np.ones(N)*5 #keep identical healing rates for all the nodes
-    spread=diseasespread(nlist,elist,taulist)
+    spread=diseasespread(nlist,elist,taulist,weights)
     x0=np.ones(N)*0 #at t=0, all other cities are normal
-    x0[24]=1 #at t=0, Kathmandu is diseased
-    samples=1e2
-    simuwindow=50 #the evolution is distinctly observed at longer times, so keep the simulation window large
+    x0[11]=1 #at t=0, Kathmandu is diseased
+    samples=100
+    simuwindow=100 #the evolution is distinctly observed at longer times, so keep the simulation window large
     t=np.linspace(0,simuwindow,samples)
     xt=odeint(spread.evolve,x0,t)
 
@@ -135,7 +139,8 @@ if __name__ == "__main__":
             #draw map of Nepal, need the .shp file
             sns.set(style="whitegrid", color_codes=True)
             sns.mpl.rc("figure", figsize=(10,6))
-            pathshp = "npl_admbnda_adm0_nd_20190430.shp"
+            pathshp = "npl_admbnda_districts_nd_20190430.shp"
+            # pathshp = "npl_admbnda_adm0_nd_20190430.shp"
             shapef = shp.Reader(pathshp)
 
             def country_map(shapef):
@@ -146,6 +151,6 @@ if __name__ == "__main__":
             country_map(shapef)
             print('Time - ',day)
             plt.title('Time-'+str(int(int(day))),fontsize=24)
-            plt.savefig('covid000'+str(int(int(day)))+'.png')
+            plt.savefig('results_road/covid000'+str(int(int(day)))+'.png')
 
     #ffmpeg -r 0.5 -f image2 -s 1920x1080 -i covid%04d.png -vcodec libx264 -crf 25  -pix_fmt yuv420p covidlatest.mp4 #run from the terminal
