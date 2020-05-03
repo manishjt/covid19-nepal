@@ -1,6 +1,7 @@
 import numpy as np
 from helper_func import checkbound_ini, checkbound
 from seir import seir
+
 def inference(M, pop, incidence):
 #Inference for the metapopulation SEIR model
 #Adapted from code by Sen Pei
@@ -11,12 +12,12 @@ def inference(M, pop, incidence):
    # load observation (14, 375)
 
    # Define constants
-   Td=9;                         % average reporting delay
-   a=1.85;                       % shape parameter of gamma distribution
-   b=Td/a;                       % scale parameter of gamma distribution
+   Td=9;                         #average reporting delay
+   a=1.85;                       # shape parameter of gamma distribution
+   b=Td/a;                       # scale parameter of gamma distribution
 
-   num_loc=M.shape[0];            % number of locations
-   rnds=ceil(gamrnd(a,b,1e4,1)); %pre-generate gamma random numbers
+   num_loc=M.shape[0];           # number of locations
+   rnds=ceil(gamrnd(a,b,1e4,1)); # pre-generate gamma random numbers
 
    # observation operator: obs=Hx
    H=np.zeros([num_loc,5*num_loc+6]);
