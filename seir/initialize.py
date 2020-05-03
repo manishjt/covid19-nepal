@@ -83,4 +83,4 @@ def initialize(pop,num_ens, M):
             #Ia
             Iawuhan=x[(seedid-1)*5+4,:];
             x[(i-1)*5+4,:] = np.round(C[i]*3*Iawuhan/pop[seedid]);
-   return x, paramax, paramin
+    return x, paramax, paramin

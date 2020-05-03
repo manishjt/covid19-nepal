@@ -1,10 +1,12 @@
 import numpy as np
 from helper_func import checkbound_ini, checkbound
-from seir import seir
+from seir import SEIR
+from initialize import initialize
+import numpy as np
 
 def inference(M, pop, incidence):
-#Inference for the metapopulation SEIR model
-#Adapted from code by Sen Pei
+    #Inference for the metapopulation SEIR model
+    #Adapted from code by Sen Pei
 
     #Load files
     # mobility (373,375,14)
@@ -36,6 +38,7 @@ def inference(M, pop, incidence):
 
     num_ens=300;#number of ensemble
     pop0=pop*np.ones([1,num_ens]);
+    print("test")
     [x,paramax,paramin]=initialize(pop0,num_ens, M);#get parameter range
     num_var=x.shape[0];#number of state variables
 
@@ -51,18 +54,18 @@ def inference(M, pop, incidence):
 
     #start iteration for Iter round
     for n in range(Iter):
-       sig[n]=alp**(n-1);
+       sig[0, n]=alp**(n-1);
        #generate new ensemble members using multivariate normal distribution
-       Sigma=np.diag(sig[n]**2*SIG);
+       Sigma=np.diag(sig[0, n]**2*SIG);
        if (n==1):
            #first guess of state space
-           [x,_,_]=initialize(pop0,num_ens);
-           para=x[end-5:end,:];
-           theta[:,1]=np.mean(para,2);#mean parameter
+           [x,_,_]=initialize(pop0,num_ens, M);
+           para=x[-5:,:];
+           theta[:,1]=np.mean(para,1);#mean parameter
        else:
-           [x,_, _]=initialize(pop0,num_ens);
-           para =np.random.multivariate_normal(theta[:,n].T,Sigma,num_ens).T;#generate parameters (multivariate random numbers)
-           x[end-5:,:]=para;
+           [x,_, _]=initialize(pop0,num_ens, M);
+           para =np.random.multivariate_normal(theta[:,n],Sigma,(num_ens,1)).T;#generate parameters (multivariate random numbers)
+           x[-5:,:]=para.reshape((5, num_ens));
 
        #correct lower/upper bounds of the parameters
        x=checkbound_ini(x,pop0);
@@ -72,14 +75,14 @@ def inference(M, pop, incidence):
        pop=pop0;
        obs_temp=np.zeros([num_loc,num_ens,num_times]);#records of reported cases
        for t in range(num_times):
-           print([n, t])
            #inflation
-           temp1 = np.mean(x,2) * np.ones([1, num_ens])
+           x_mean = np.mean(x,1)
+           temp1 = x_mean.reshape(x_mean.shape[0],1) * np.ones([1, num_ens])
            x=temp1+lambda_val*(x-temp1);
            x=checkbound(x,pop);
            #integrate forward
            x,pop=SEIR(x,M,pop,t,pop0);
-           obs_cnt=H*x;#new infection
+           obs_cnt=np.matmul(H, x);#new infection
            #add reporting delay
            for k in range(num_ens):
                for l in range(num_loc):
@@ -113,35 +116,40 @@ def inference(M, pop, incidence):
                dy = post_mean + alpha*(obs_ens[l,:]-prior_mean)-obs_ens[l,:];
 
                #Loop over each state variable (connected to location l)
-               rr=np.zeros[1,num_var];
-               neighbors=np.union1d(np.nonzero(np.sum(M[:,l,:],3)>0),
-                               np.nonzero(np.sum(M[l,:,:],3)>0));
-               neighbors=np.vcat((neighbors,l));#add location l
+               rr=np.zeros([num_var]);
+               #neighbors=union(find(sum(M(:,l,:),1)>0),find(sum(M(l,:,:),1)>0));
+
+               neighbors=np.union1d(np.nonzero(np.sum(M[:,l,:],1)>0),
+                               np.nonzero(np.sum(M[l,:,:],1)>0));
+               neighbors = neighbors.reshape((neighbors.shape[0],1))
+               neighbors=np.vstack((neighbors,l));#add location l
                for i in range(len(neighbors)):
                    idx=neighbors[i];
                    for j in range(5):
                        A=np.cov(x[(idx-1)*5+j,:],obs_ens[l,:]); #caclulate covariance
-                       rr[(idx-1)*5+j]=A[2,1]/prior_var;
+                       rr[(idx-1)*5+j]=A[1,0]/prior_var;
 
 
-               for i in range(num_loc*5+1,num_loc*5+6):
+               for i in range(num_loc*5,num_loc*5+5):
                    A=np.cov(x[i,:],obs_ens[l,:]);     #calculate covariance
-                   rr[i]=A[2,1]/prior_var;
+                   rr[i]=A[1,0 ]/prior_var;
 
-
+               rr = rr.reshape((rr.shape[0],1))
+               dy = dy.reshape((dy.shape[0],1))
                #Get the adjusted variable
-               dx=rr.T*dy;
+               dx= np.matmul(rr, dy.T);
                x=x+dx;
                #Corrections to DA produced aphysicalities
                x = checkbound(x,pop);
 
            x_post[:,:,t]=x;
-           para_post[:,:,t,n]=x[end-5:,:];
+           para_post[:,:,t,n]=x[-5:,:];
 
        para=x_post[-5:,:,1:num_times];
-       temp=np.squeeze(np.mean(para,2));#average over ensemble members
-       theta[:,n+1]=np.mean(temp,2);#average over time
+       temp=np.squeeze(np.mean(para,1));#average over ensemble members
+       theta[:,n+1]=np.mean(temp,1);#average over time
 
-   parameters=theta[:,end];#estimated parameters
 
-   np.save('parameters.npz',parameters);
+    parameters=theta[:,-1];#estimated parameters
+
+    np.save('parameters.npz',parameters);

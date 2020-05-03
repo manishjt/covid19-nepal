@@ -11,7 +11,7 @@ def SEIR(x, M , pop, ts, pop0):
         300 = number of ensembles
         6 = number of states
     '''
-    
+
 
     #the metapopulation SEIR model
     dt = 1
@@ -23,24 +23,25 @@ def SEIR(x, M , pop, ts, pop0):
 
     #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
     #TODO: check 0 indexing
-    Sidx = np.array(range(1,5,5*num_loc));
-    Eidx = np.array(range(2,5,5*num_loc));
-    Isidx = np.array(range(3,5,5*num_loc));
-    Iaidx = np.array(range(4,5,5*num_loc));
-    obsidx = np.array(range(5,5,5*num_loc));
-    betaidx = 5*num_loc+1;
-    muidx=5*num_loc+2;
-    thetaidx=5*num_loc+3;
-    Zidx=5*num_loc+4;
-    alphaidx=5*num_loc+5;
-    Didx=5*num_loc+6;
+    Sidx = np.array(range(0,  5*num_loc, 5));
+    Eidx = np.array(range(1,  5*num_loc, 5));
+    Isidx = np.array(range(2, 5*num_loc, 5));
+    Iaidx = np.array(range(3, 5*num_loc, 5));
+    obsidx = np.array(range(4,5*num_loc, 5));
 
-    S=zeros(num_loc,num_ens,tmstep+1);
-    E=zeros(num_loc,num_ens,tmstep+1);
-    Is=zeros(num_loc,num_ens,tmstep+1);
-    Ia=zeros(num_loc,num_ens,tmstep+1);
-    Incidence=zeros(num_loc,num_ens,tmstep+1);
-    obs=zeros(num_loc,num_ens);
+    betaidx = 5*num_loc;
+    muidx=5*num_loc + 1;
+    thetaidx=5*num_loc + 2;
+    Zidx=5*num_loc + 3;
+    alphaidx=5*num_loc + 4;
+    Didx=5*num_loc + 5;
+
+    S=np.zeros((num_loc,num_ens,tmstep+1));
+    E=np.zeros((num_loc,num_ens,tmstep+1));
+    Is=np.zeros((num_loc,num_ens,tmstep+1));
+    Ia=np.zeros((num_loc,num_ens,tmstep+1));
+    Incidence=np.zeros((num_loc,num_ens,tmstep+1));
+    obs=np.zeros((num_loc,num_ens));
 
     #initialize S,E,Is,Ia and parameters
     S[:,:,0]=x[Sidx,:];
@@ -290,7 +291,13 @@ def SEIR(x, M , pop, ts, pop0):
     x[Iaidx,:]=Ia[:,:,tcnt+1];
     x[obsidx,:]=obs;
     ###update pop
-    pop=pop-np.sum(M[:,:,ts],1).T*theta+np.sum(M[:,:,ts],2)*theta;
+
+
+    M_sum0 = np.sum(M[:,:,ts],0); M_sum0 = M_sum0.reshape(M_sum0.shape[0],1)
+    M_sum1 = np.sum(M[:,:,ts],1); M_sum1 = M_sum1.reshape(1,M_sum1.shape[0])
+    theta = theta.reshape(theta.shape[0],1)
+    #rint(M_sum0.shape, M_sum1.shape, theta.shape, pop.shape)
+    pop=pop-M_sum0*theta.T+M_sum1.T*theta.T;
     minfrac=0.6;
     pop[pop<minfrac*pop0]=pop0[pop<minfrac*pop0]*minfrac;
 

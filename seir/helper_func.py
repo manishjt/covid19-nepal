@@ -1,3 +1,5 @@
+import numpy as np
+
 def checkbound_ini(x,pop):
    #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
    betalow=0.8;betaup=1.5;#transmission rate
