@@ -17,23 +17,27 @@ def checkbound_ini(x,pop):
        #E
        x[(i-1)*5+2,x[(i-1)*5+2,:]<0]=0;
        #Ir
-       x[(i-1)*5+3,x[(i-1)*5+3,:)<0]=0;
+       x[(i-1)*5+3,x[(i-1)*5+3,:]<0]=0;
        #Iu
-       x[(i-1)*5+4,x[(i-1)*5+4,:)<0]=0;
+       x[(i-1)*5+4,x[(i-1)*5+4,:]<0]=0;
        #obs
        x[(i-1)*5+5,x[(i-1)*5+5,:]<0]=0;
 
    for i in range(6):
-       temp=x[end-6+i,:];
-       index=(temp<xmin[i]) or (temp>xmax[i]); # logical or
+       temp=x[-6+i,:];
+       i1 = temp < xmin[i]
+       i2 = temp > xmax[i]
+
+       index=np.logical_or(i1, i2); # logical or
        index_out=np.nonzero(index>0);
        index_in=np.nonzero(index==0);
        #redistribute out bound ensemble members
-       x[end-6+i,index_out]=datasample(x[end-6+i,index_in],
-                                             len(index_out));
-                            #TODO: Find numpy equivalent of datasample
+       temp = x[-6+i, index_in]
+       x[-6+i,index_out]=np.random.choice(temp.reshape((temp.shape[1],)),
+                                           len(index_out));
 
    return x
+
 
 def checkbound(x,pop):
    #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
@@ -61,10 +65,10 @@ def checkbound(x,pop):
 
    for i in range(6):
       #logical indexing : the y-indices of x that are less than xmin(i)
-       x[end-6+i,x[end-6+i,:]<xmin[i]]=xmin[i]*(1+0.1*
-                                                np.random.rand(np.sum(x[end-6+i,:]<xmin[i]),1));
+       temp1 = xmin[i]*(1+0.1* np.random.rand(np.sum(x[-6+i,:]<xmin[i]),1))
+       x[-6+i,x[-6+i,:]<xmin[i]]= temp1.reshape((temp1.shape[0],));
        #logical indexing : the y-indices of x that are greater than xmin(i)
-       x[end-6+i,x[end-6+i,:]>xmax[i]]=xmax[i]*(1-0.1*
-                                                np.random.rand(np.sum(x[end-6+i,:]>xmax[i]),1));
+       temp2 = xmax[i]*(1-0.1* np.random.rand(np.sum(x[-6+i,:]>xmax[i]),1))
+       x[-6+i,x[-6+i,:]>xmax[i]]= temp2.reshape((temp2.shape[0],));
 
-    return x
+   return x
