@@ -34,10 +34,12 @@ def checkbound_ini(x,pop):
        index_out=np.nonzero(index>0);
        index_in=np.nonzero(index==0);
        #redistribute out bound ensemble members
-       temp = x[-6+i, index_in]
-       x[-6+i,index_out]=np.random.choice(temp.reshape((temp.shape[1],)),
+       temp1 = x[-6+i, index_in]
+       print("Shape of temp, x, index_out: ", temp1.shape, x.shape, len(index_out))
+       x[-6+i,index_out]=np.random.choice(temp1.reshape((temp1.shape[1],)),
                                            len(index_out));
-
+       #x = x.reshape(x.shape[0],1)
+                            
    return x
 
 
