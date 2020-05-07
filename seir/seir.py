@@ -14,6 +14,7 @@ def SEIR(x, M , pop, ts, pop0):
 
 
     #the metapopulation SEIR model
+    print("In SEIR")
     dt = 1
     tmstep = 1
 
@@ -58,8 +59,8 @@ def SEIR(x, M , pop, ts, pop0):
     #start integration
     #TODO: pythonize, rewrite repeated steps as functions
     tcnt=0;
-    for t in range(ts+dt,dt,ts+tmstep):
-        tcnt=tcnt+1;
+    #print(range(ts+dt, dt, ts+tmstep))
+    for t in range(ts+dt,ts+tmstep+1, dt):
         dt1=dt;
         #first step
         M_ts = M[:,:,ts]
@@ -68,41 +69,54 @@ def SEIR(x, M , pop, ts, pop0):
         Is_tcnt = Is[:,:,tcnt]
         E_tcnt = E[:, :, tcnt]
 
-        dt_theta = dt1*(np.ones(num_loc,1) * theta)
+        dt_theta = dt1*(np.ones((num_loc,1)) * theta)
         temp2 = (pop-Is_tcnt)
+
+        sum_Mts = np.sum(M_ts,0).reshape(M_ts.shape[0],1)
         ESenter=np.multiply(dt_theta,
-                            (M_ts*np.divide(S_tcnt,temp2)));
-        ESleft=np.min(np.multiply((dt_theta),
-                           np.multiply(np.divide(S_tcnt,temp2),(np.sum(M_ts).T*ones(1,num_ens)))),
+                            np.matmul(M_ts,np.divide(S_tcnt,temp2)));
+        ESleft=np.minimum(np.multiply((dt_theta),
+                           np.multiply(np.divide(S_tcnt,temp2),np.matmul(sum_Mts,np.ones((1,num_ens))))),
                       dt1*S_tcnt);
+
         EEenter=np.multiply(dt_theta,
-                            (M_ts*np.divide(E_tcnt,temp2)));
-        EEleft=np.min(np.multiply(dt_theta,
-                          np.multiply(np.divide(E_tcnt,temp2),np.sum(M_ts).T*ones(1,num_ens))),
-                      dt1*E[:,:,tcnt]);
+                            np.matmul(M_ts,np.divide(E_tcnt,temp2)));
+        EEleft=np.minimum(np.multiply(dt_theta,
+                          np.multiply(np.divide(E_tcnt,temp2),np.matmul(sum_Mts,np.ones((1,num_ens))))),
+                      dt1*E_tcnt);
+
         EIaenter= np.multiply(dt_theta,
-                              (M_ts*np.divide(Ia_tcnt,temp2)));
-        EIaleft=np.min(np.multiply(dt_theta,
-                            np.multiply(np.divide(Ia_tcnt,temp2),(np.sum(M_ts).T*ones(1,num_ens)))),
-                       dt1*Ia_tcnt);
+                              np.matmul(M_ts,np.divide(Ia_tcnt,temp2)));
+        EIaleft=np.minimum(np.multiply(dt_theta,
+                            np.multiply(np.divide(Ia_tcnt,temp2),np.matmul(sum_Mts,np.ones((1,num_ens))))),
+                            dt1*Ia_tcnt);
 
 
-        Eexps=np.divide(dt1*np.multiply((ones(num_loc,1)*beta),np.multiply(S_tcnt,Is_tcnt)),pop);
-        Eexpa=np.divide(np.multiply(dt1*(ones(num_loc,1)*mu),
-                                    np.multiply((ones(num_loc,1)*beta),
+        Eexps=np.divide(dt1*np.multiply((np.ones((num_loc,1))*beta),np.multiply(S_tcnt,Is_tcnt)),pop);
+
+        Eexpa=np.divide(np.multiply(dt1*(np.ones((num_loc,1))*mu),
+                                    np.multiply((np.ones((num_loc,1))*beta),
                                                 np.multiply(S_tcnt,Ia_tcnt))),
                         pop);
-        Einfs=np.divide(dt1*np.multiply((ones(num_loc,1)*alpha),E_tcnt),(ones(num_loc,1)*Z));
-        Einfa=np.divide(dt1*np.multiply((ones(num_loc,1)*(1-alpha)),E_tcnt),(ones(num_loc,1)*Z));
-        Erecs=dt1*np.divide(Is_tcnt,(ones(num_loc,1)*D));
-        Ereca=dt1*np.divide(Ia_tcnt,ones(num_loc,1)*D);
 
-        ESenter=max(ESenter,0);ESleft=max(ESleft,0);
-        EEenter=max(EEenter,0);EEleft=max(EEleft,0);
-        EIaenter=max(EIaenter,0);EIaleft=max(EIaleft,0);
-        Eexps=max(Eexps,0);Eexpa=max(Eexpa,0);
-        Einfs=max(Einfs,0);Einfa=max(Einfa,0);
-        Erecs=max(Erecs,0);Ereca=max(Ereca,0);
+        Einfs=np.divide(dt1*np.multiply((np.ones((num_loc,1))*alpha),E_tcnt),(np.ones((num_loc,1))*Z));
+        Einfa=np.divide(dt1*np.multiply((np.ones((num_loc,1))*(1-alpha)),E_tcnt),(np.ones((num_loc,1))*Z));
+        Erecs=dt1*np.divide(Is_tcnt,(np.ones((num_loc,1))*D));
+        Ereca=dt1*np.divide(Ia_tcnt,np.ones((num_loc,1))*D);
+
+
+        ESenter=np.maximum(ESenter,np.zeros(ESenter.shape));
+        ESleft=np.maximum(ESleft,np.zeros(ESleft.shape));
+        EEenter=np.maximum(EEenter,np.zeros(EEenter.shape));
+        EEleft=np.maximum(EEleft,np.zeros(EEleft.shape));
+        EIaenter=np.maximum(EIaenter,np.zeros(EIaenter.shape));
+        EIaleft=np.maximum(EIaleft,np.zeros(EIaleft.shape));
+        Eexps=np.maximum(Eexps,np.zeros(Eexps.shape));
+        Eexpa=np.maximum(Eexpa,np.zeros(Eexpa.shape));
+        Einfs=np.maximum(Einfs,np.zeros(Einfs.shape));
+        Einfa=np.maximum(Einfa,np.zeros(Einfa.shape));
+        Erecs=np.maximum(Erecs,np.zeros(Erecs.shape));
+        Ereca=np.maximum(Ereca,np.zeros(Ereca.shape));
 
         ##########stochastic version
         ESenter=np.random.poisson(ESenter);ESleft=np.random.poisson(ESleft);
@@ -130,15 +144,15 @@ def SEIR(x, M , pop, ts, pop0):
 
         M_ts = M[:, :, ts]
         temp3 = pop-Tis1
-        temp4 = (sum(M_ts).T*ones(1,num_ens))
-        ESenter=np.multiply(dt_theta,(M_ts*np.divide(Ts1,temp3)));
-        ESleft=min(np.multiply(np.multiply(dt_theta,np.divide(Ts1,temp3)),temp4),dt1*Ts1);
-        EEenter=np.multiply(dt_theta,(M_ts*np.divide(Te1,temp3)));
-        EEleft=min(np.multiply(np.multiply(dt_theta,np.divide(Te1,temp3)),temp4),dt1*Te1);
-        EIaenter=np.multiply(dt_theta,(M_ts*np.divide(Tia1,temp3)));
-        EIaleft=min(np.multiply(np.multiply(dt_theta,np.divide(Tia1,temp3)),temp4),dt1*Tia1);
+        temp4 = np.matmul(sum(M_ts, 0).reshape(M_ts.shape[0],1),np.ones((1,num_ens)))
+        ESenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Ts1,temp3)));
+        ESleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Ts1,temp3)),temp4),dt1*Ts1);
+        EEenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Te1,temp3)));
+        EEleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Te1,temp3)),temp4),dt1*Te1);
+        EIaenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Tia1,temp3)));
+        EIaleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Tia1,temp3)),temp4),dt1*Tia1);
 
-        num_loc_ones = np.ones(num_loc, 1)
+        num_loc_ones = np.ones((num_loc, 1))
         Eexps=np.multiply(dt1*(num_loc_ones*beta),
                           np.multiply(Ts1, np.divide(Tis1,pop)));
         Eexpa=np.multiply(dt1*(num_loc_ones*mu),
@@ -149,13 +163,18 @@ def SEIR(x, M , pop, ts, pop0):
         Erecs=dt1*np.divide(Tis1,(num_loc_ones*D));
         Ereca=dt1*np.divide(Tia1,(num_loc_ones*D));
 
-        ESenter=max(ESenter,0);ESleft=max(ESleft,0);
-        EEenter=max(EEenter,0);EEleft=max(EEleft,0);
-        EIaenter=max(EIaenter,0);EIaleft=max(EIaleft,0);
-        Eexps=max(Eexps,0);Eexpa=max(Eexpa,0);
-        Einfs=max(Einfs,0);Einfa=max(Einfa,0);
-        Erecs=max(Erecs,0);Ereca=max(Ereca,0);
-
+        ESenter=np.maximum(ESenter,np.zeros(ESenter.shape));
+        ESleft=np.maximum(ESleft,np.zeros(ESleft.shape));
+        EEenter=np.maximum(EEenter,np.zeros(EEenter.shape));
+        EEleft=np.maximum(EEleft,np.zeros(EEleft.shape));
+        EIaenter=np.maximum(EIaenter,np.zeros(EIaenter.shape));
+        EIaleft=np.maximum(EIaleft,np.zeros(EIaleft.shape));
+        Eexps=np.maximum(Eexps,np.zeros(Eexps.shape));
+        Eexpa=np.maximum(Eexpa,np.zeros(Eexpa.shape));
+        Einfs=np.maximum(Einfs,np.zeros(Einfs.shape));
+        Einfa=np.maximum(Einfa,np.zeros(Einfa.shape));
+        Erecs=np.maximum(Erecs,np.zeros(Erecs.shape));
+        Ereca=np.maximum(Ereca,np.zeros(Ereca.shape));
         ###########stochastic version
         ESenter=np.random.poisson(ESenter);ESleft=np.random.poisson(ESleft);
         EEenter=np.random.poisson(EEenter);EEleft=np.random.poisson(EEleft);
@@ -181,15 +200,15 @@ def SEIR(x, M , pop, ts, pop0):
 
         M_ts = M[:, :, ts]
         temp5 = pop-Tis2
-        temp6 = (sum(M_ts).T*ones(1,num_ens))
-        ESenter=np.multiply(dt_theta,(M_ts*np.divide(Ts2,temp5)));
-        ESleft=min(np.multiply(np.multiply(dt_theta,np.divide(Ts2,temp5)),temp6),dt1*Ts2);
-        EEenter=np.multiply(dt_theta,(M_ts*np.divide(Te2,temp5)));
-        EEleft=min(np.multiply(np.multiply(dt_theta,np.divide(Te2,temp5)),temp6),dt1*Te2);
-        EIaenter=np.multiply(dt_theta,(M_ts*np.divide(Tia2,temp5)));
-        EIaleft=min(np.multiply(np.multiply(dt_theta,np.divide(Tia2,temp5)),temp6),dt1*Tia2);
+        temp6 = np.matmul(sum(M_ts, 0).reshape(M_ts.shape[0],1),np.ones((1,num_ens)))
+        ESenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Ts2,temp5)));
+        ESleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Ts2,temp5)),temp6),dt1*Ts2);
+        EEenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Te2,temp5)));
+        EEleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Te2,temp5)),temp6),dt1*Te2);
+        EIaenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Tia2,temp5)));
+        EIaleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Tia2,temp5)),temp6),dt1*Tia2);
 
-        num_loc_ones = np.ones(num_loc, 1)
+        num_loc_ones = np.ones((num_loc, 1))
         Eexps=np.multiply(dt1*(num_loc_ones*beta),
                           np.multiply(Ts2, np.divide(Tis2,pop)));
         Eexpa=np.multiply(dt1*(num_loc_ones*mu),
@@ -201,16 +220,22 @@ def SEIR(x, M , pop, ts, pop0):
         Ereca=dt1*np.divide(Tia2,(num_loc_ones*D));
 
 
-        ESenter=max(ESenter,0);ESleft=max(ESleft,0);
-        EEenter=max(EEenter,0);EEleft=max(EEleft,0);
-        EIaenter=max(EIaenter,0);EIaleft=max(EIaleft,0);
-        Eexps=max(Eexps,0);Eexpa=max(Eexpa,0);
-        Einfs=max(Einfs,0);Einfa=max(Einfa,0);
-        Erecs=max(Erecs,0);Ereca=max(Ereca,0);
+        ESenter=np.maximum(ESenter,np.zeros(ESenter.shape));
+        ESleft=np.maximum(ESleft,np.zeros(ESleft.shape));
+        EEenter=np.maximum(EEenter,np.zeros(EEenter.shape));
+        EEleft=np.maximum(EEleft,np.zeros(EEleft.shape));
+        EIaenter=np.maximum(EIaenter,np.zeros(EIaenter.shape));
+        EIaleft=np.maximum(EIaleft,np.zeros(EIaleft.shape));
+        Eexps=np.maximum(Eexps,np.zeros(Eexps.shape));
+        Eexpa=np.maximum(Eexpa,np.zeros(Eexpa.shape));
+        Einfs=np.maximum(Einfs,np.zeros(Einfs.shape));
+        Einfa=np.maximum(Einfa,np.zeros(Einfa.shape));
+        Erecs=np.maximum(Erecs,np.zeros(Erecs.shape));
+        Ereca=np.maximum(Ereca,np.zeros(Ereca.shape));
 
         ###########stochastic version
         ESenter=np.random.poisson(ESenter);ESleft=np.random.poisson(ESleft);
-        EEenter=np.random.poisson(np.random.poissonEEenter);EEleft=np.random.poisson(EEleft);
+        EEenter=np.random.poisson(EEenter);EEleft=np.random.poisson(EEleft);
         EIaenter=np.random.poisson(EIaenter);EIaleft=np.random.poisson(EIaleft);
         Eexps=np.random.poisson(Eexps);
         Eexpa=np.random.poisson(Eexpa);
@@ -233,15 +258,15 @@ def SEIR(x, M , pop, ts, pop0):
 
         M_ts = M[:, :, ts]
         temp5 = pop-Tis3
-        temp6 = (sum(M_ts).T*ones(1,num_ens))
-        ESenter=np.multiply(dt_theta,(M_ts*np.divide(Ts3,temp5)));
-        ESleft=min(np.multiply(np.multiply(dt_theta,np.divide(Ts3,temp5)),temp6),dt1*Ts3);
-        EEenter=np.multiply(dt_theta,(M_ts*np.divide(Te3,temp5)));
-        EEleft=min(np.multiply(np.multiply(dt_theta,np.divide(Te3,temp5)),temp6),dt1*Te3);
-        EIaenter=np.multiply(dt_theta,(M_ts*np.divide(Tia3,temp5)));
-        EIaleft=min(np.multiply(np.multiply(dt_theta,np.divide(Tia3,temp5)),temp6),dt1*Tia3);
+        temp6 = np.matmul(sum(M_ts, 0).reshape(M_ts.shape[0],1),np.ones((1,num_ens)))
+        ESenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Ts3,temp5)));
+        ESleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Ts3,temp5)),temp6),dt1*Ts3);
+        EEenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Te3,temp5)));
+        EEleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Te3,temp5)),temp6),dt1*Te3);
+        EIaenter=np.multiply(dt_theta,np.matmul(M_ts,np.divide(Tia3,temp5)));
+        EIaleft=np.minimum(np.multiply(np.multiply(dt_theta,np.divide(Tia3,temp5)),temp6),dt1*Tia3);
 
-        num_loc_ones = np.ones(num_loc, 1)
+        num_loc_ones = np.ones((num_loc, 1))
         Eexps=np.multiply(dt1*(num_loc_ones*beta),
                           np.multiply(Ts3, np.divide(Tis3,pop)));
         Eexpa=np.multiply(dt1*(num_loc_ones*mu),
@@ -252,12 +277,18 @@ def SEIR(x, M , pop, ts, pop0):
         Erecs=dt1*np.divide(Tis3,(num_loc_ones*D));
         Ereca=dt1*np.divide(Tia3,(num_loc_ones*D));
 
-        ESenter=max(ESenter,0);ESleft=max(ESleft,0);
-        EEenter=max(EEenter,0);EEleft=max(EEleft,0);
-        EIaenter=max(EIaenter,0);EIaleft=max(EIaleft,0);
-        Eexps=max(Eexps,0);Eexpa=max(Eexpa,0);
-        Einfs=max(Einfs,0);Einfa=max(Einfa,0);
-        Erecs=max(Erecs,0);Ereca=max(Ereca,0);
+        ESenter=np.maximum(ESenter,np.zeros(ESenter.shape));
+        ESleft=np.maximum(ESleft,np.zeros(ESleft.shape));
+        EEenter=np.maximum(EEenter,np.zeros(EEenter.shape));
+        EEleft=np.maximum(EEleft,np.zeros(EEleft.shape));
+        EIaenter=np.maximum(EIaenter,np.zeros(EIaenter.shape));
+        EIaleft=np.maximum(EIaleft,np.zeros(EIaleft.shape));
+        Eexps=np.maximum(Eexps,np.zeros(Eexps.shape));
+        Eexpa=np.maximum(Eexpa,np.zeros(Eexpa.shape));
+        Einfs=np.maximum(Einfs,np.zeros(Einfs.shape));
+        Einfa=np.maximum(Einfa,np.zeros(Einfa.shape));
+        Erecs=np.maximum(Erecs,np.zeros(Erecs.shape));
+        Ereca=np.maximum(Ereca,np.zeros(Ereca.shape));
 
         ##########stochastic version
         ESenter=np.random.poisson(ESenter);ESleft=np.random.poisson(ESleft);
@@ -277,18 +308,20 @@ def SEIR(x, M , pop, ts, pop0):
         ik4i=Einfs;
 
         ##########
-        S[:,:,tcnt+1]=S[:,:,tcnt]+round(sk1/6+sk2/3+sk3/3+sk4/6);
-        E[:,:,tcnt+1]=E[:,:,tcnt]+round(ek1/6+ek2/3+ek3/3+ek4/6);
-        Is[:,:,tcnt+1]=Is[:,:,tcnt]+round(isk1/6+isk2/3+isk3/3+isk4/6);
-        Ia[:,:,tcnt+1]=Ia[:,:,tcnt]+round(iak1/6+iak2/3+iak3/3+iak4/6);
-        Incidence[:,:,tcnt+1]=round(ik1i/6+ik2i/3+ik3i/3+ik4i/6);
+        S[:,:,tcnt+1]=S[:,:,tcnt]+np.round(sk1/6+sk2/3+sk3/3+sk4/6);
+        E[:,:,tcnt+1]=E[:,:,tcnt]+np.round(ek1/6+ek2/3+ek3/3+ek4/6);
+        Is[:,:,tcnt+1]=Is[:,:,tcnt]+np.round(isk1/6+isk2/3+isk3/3+isk4/6);
+        Ia[:,:,tcnt+1]=Ia[:,:,tcnt]+np.round(iak1/6+iak2/3+iak3/3+iak4/6);
+        Incidence[:,:,tcnt+1]=np.round(ik1i/6+ik2i/3+ik3i/3+ik4i/6);
         obs=Incidence[:,:,tcnt+1];
-
+        tcnt=tcnt+1;
+        print("Seir iteration:", t)
+        print(obs[obs>0])
     ##update x
-    x[Sidx,:]=S[:,:,tcnt+1];
-    x[Eidx,:]=E[:,:,tcnt+1];
-    x[Isidx,:]=Is[:,:,tcnt+1];
-    x[Iaidx,:]=Ia[:,:,tcnt+1];
+    x[Sidx,:]=S[:,:,tcnt];
+    x[Eidx,:]=E[:,:,tcnt];
+    x[Isidx,:]=Is[:,:,tcnt];
+    x[Iaidx,:]=Ia[:,:,tcnt];
     x[obsidx,:]=obs;
     ###update pop
 

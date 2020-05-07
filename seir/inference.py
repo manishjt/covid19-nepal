@@ -36,6 +36,7 @@ def inference(M, pop, incidence):
        for t in range(num_times):
            OEV[l,t] = max(4,obs_truth[l,t]**2/4);
 
+
     num_ens=300;#number of ensemble
     pop0=pop*np.ones([1,num_ens]);
     print("test")
@@ -43,7 +44,7 @@ def inference(M, pop, incidence):
     num_var=x.shape[0];#number of state variables
 
     # IF setting
-    Iter=10; #number of iterations
+    Iter=5; #number of iterations TODO
     num_para=paramax.shape[0];#number of parameters
     theta=np.zeros([num_para,Iter+1]);#mean parameters at each iteration
     para_post=np.zeros([num_para,num_ens,num_times,Iter]);#posterior parameters
@@ -74,16 +75,21 @@ def inference(M, pop, incidence):
        x_post=np.zeros([num_var,num_ens,num_times]);#posterior
        pop=pop0;
        obs_temp=np.zeros([num_loc,num_ens,num_times]);#records of reported cases
-       for t in range(num_times):
+       for t in range(5):#range(num_times):
            #inflation
            x_mean = np.mean(x,1)
            temp1 = x_mean.reshape(x_mean.shape[0],1) * np.ones([1, num_ens])
            x=temp1+lambda_val*(x-temp1);
            x=checkbound(x,pop);
+           #print("After checkbound", x[0:5])
            #integrate forward
+           print("Main loop: ", t)
            x,pop=SEIR(x,M,pop,t,pop0);
+           #print(x[:5, :5])
+           #print(pop[:5, :5])
+
            obs_cnt=np.matmul(H, x);#new infection
-           #add reporting delay
+           #print("obs = Hx = ", obs_cnt[0:5])#add reporting delay
            for k in range(num_ens):
                for l in range(num_loc):
                    if obs_cnt[l,k]>0:
@@ -97,18 +103,22 @@ def inference(M, pop, incidence):
 
 
            obs_ens=obs_temp[:,:,t];#observation at t
+           #print("obs_ens: ", obs_ens[0:5])
            x_prior[:,:,t]=x;#set prior
            #loop through local observations
            for l in range(num_loc):
                #Get the variance of the ensemble
+
                obs_var = OEV[l,t];
+               #print("obs_var:", l, t, obs_var)
                prior_var = np.var(obs_ens[l,:]);
                post_var = prior_var*obs_var/(prior_var+obs_var);
                if prior_var==0:#if degenerate
                    post_var = 1e-3;
-                   prior_va = 1e-3;
+                   prior_var = 1e-3;
 
                prior_mean = np.mean(obs_ens[l,:]);
+               #print(prior_var, obs_var)
                post_mean = post_var*(prior_mean/prior_var + obs_truth[l,t]/obs_var);
 
                ### Compute alpha and adjust distribution to conform to posterior moments
@@ -145,11 +155,12 @@ def inference(M, pop, incidence):
            x_post[:,:,t]=x;
            para_post[:,:,t,n]=x[-5:,:];
 
+       prnt()
        para=x_post[-5:,:,1:num_times];
        temp=np.squeeze(np.mean(para,1));#average over ensemble members
        theta[:,n+1]=np.mean(temp,1);#average over time
 
 
     parameters=theta[:,-1];#estimated parameters
-
+    print(parameters)
     np.save('parameters.npz',parameters);
