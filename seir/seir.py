@@ -316,7 +316,7 @@ def SEIR(x, M , pop, ts, pop0):
         obs=Incidence[:,:,tcnt+1];
         tcnt=tcnt+1;
         print("Seir iteration:", t)
-        print(obs[obs>0])
+
     ##update x
     x[Sidx,:]=S[:,:,tcnt];
     x[Eidx,:]=E[:,:,tcnt];

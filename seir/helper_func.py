@@ -1,5 +1,6 @@
 import numpy as np
 
+import random
 def checkbound_ini(x,pop):
    #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
    betalow=0.8;betaup=1.5;#transmission rate
@@ -14,32 +15,33 @@ def checkbound_ini(x,pop):
    num_loc=pop.shape[0];
    for i in range(num_loc):
        #S
-       x[(i-1)*5+1,x[(i-1)*5+1,:]<0]=0;
-       x[(i-1)*5+1,x[(i-1)*5+1,:]>pop[i,:]]=pop[i,x[(i-1)*5+1,:]>pop[i,:]];
+       x[i*5,x[i*5,:]<0]=0;
+       x[i*5,x[i*5,:]>pop[i,:]]=pop[i,x[i*5,:]>pop[i,:]];
        #E
-       x[(i-1)*5+2,x[(i-1)*5+2,:]<0]=0;
+       x[i*5+1,x[i*5+1,:]<0]=0;
        #Ir
-       x[(i-1)*5+3,x[(i-1)*5+3,:]<0]=0;
+       x[i*5+2,x[i*5+2,:]<0]=0;
        #Iu
-       x[(i-1)*5+4,x[(i-1)*5+4,:]<0]=0;
+       x[i*5+3,x[i*5+3,:]<0]=0;
        #obs
-       x[(i-1)*5+5,x[(i-1)*5+5,:]<0]=0;
+       x[i*5+4,x[i*5+4,:]<0]=0;
 
    for i in range(6):
        temp=x[-6+i,:];
+
        i1 = temp < xmin[i]
        i2 = temp > xmax[i]
 
        index=np.logical_or(i1, i2); # logical or
        index_out=np.nonzero(index>0);
        index_in=np.nonzero(index==0);
+
        #redistribute out bound ensemble members
        temp1 = x[-6+i, index_in]
-       print("Shape of temp, x, index_out: ", temp1.shape, x.shape, len(index_out))
-       x[-6+i,index_out]=np.random.choice(temp1.reshape((temp1.shape[1],)),
+       x[-7+i,index_out]=np.random.choice(temp1.reshape((temp1.shape[1],)),
                                            len(index_out));
        #x = x.reshape(x.shape[0],1)
-                            
+
    return x
 
 
@@ -56,16 +58,16 @@ def checkbound(x,pop):
    num_loc=pop.shape[0];
    for i in range(num_loc):
        #S
-       x[(i-1)*5+1,x[(i-1)*5+1,:]<0]=0; #logical indexing
-       x[(i-1)*5+1,x[(i-1)*5+1,:]>pop[i,:]]=pop[i,x[(i-1)*5+1,:]>pop[i,:]];
+       x[i*5,x[i*5,:]<0]=0; #logical indexing
+       x[i*5,x[i*5,:]>pop[i,:]]=pop[i,x[i*5,:]>pop[i,:]];
        #E
-       x[(i-1)*5+2,x[(i-1)*5+2,:]<0]=0;
+       x[i*5+1,x[i*5+1,:]<0]=0;
        #Ir
-       x[(i-1)*5+3,x[(i-1)*5+3,:]<0]=0;
+       x[i*5+2,x[i*5+2,:]<0]=0;
        #Iu
-       x[(i-1)*5+4,x[(i-1)*5+4,:]<0]=0;
+       x[i*5+3,x[i*5+3,:]<0]=0;
        #obs
-       x[(i-1)*5+5,x[(i-1)*5+5,:]<0]=0;
+       x[i*5+4,x[i*5+4,:]<0]=0;
 
    for i in range(6):
       #logical indexing : the y-indices of x that are less than xmin(i)

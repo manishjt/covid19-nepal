@@ -33,54 +33,65 @@ def initialize(pop,num_ens, M):
     xmin=[];
     xmax=[];
     for i in range(num_loc):
-        xmin +=[Slow*pop[i],
-                Elow*pop[i],
-                Irlow*pop[i],
-                Iulow*pop[i],
+        xmin +=[Slow*pop[i,0],
+                Elow*pop[i,0],
+                Irlow*pop[i,0],
+                Iulow*pop[i,0],
                 obslow];
 
-        xmax += [Sup*pop[i],
-                 Eup*pop[i],
-                 Irup*pop[i],
-                 Iuup*pop[i],
+        xmax += [Sup*pop[i,0],
+                 Eup*pop[i,0],
+                 Irup*pop[i,0],
+                 Iuup*pop[i,0],
                  obsup];
 
     xmin += [betalow, mulow, thetalow, Zlow, alphalow, Dlow];
     xmax += [betaup, muup, thetaup, Zup, alphaup, Dup];
+
     xmin = np.array(xmin)
     xmax = np.array(xmax)
 
-    paramax = xmax[-5:];
-    paramin=xmin[-5:];
+    paramax = xmax[-6:];
+    paramin=xmin[-6:];
 
     # seeding in Wuhan
     # Wuhan - 170
-    seedid = 170;
+    seedid = 169; #counting from 0
     #E
-    xmin[(seedid-1)*5+2]=0;
-    xmax[(seedid-1)*5+2]=2000;
+    xmin[(seedid)*5+1]=0;
+    xmax[(seedid)*5+1]=2000;
     #Is
-    xmin[(seedid-1)*5+3]=0;
-    xmax[((seedid-1)*5+3)]=0;
+    xmin[(seedid)*5+2]=0;
+    xmax[((seedid)*5+2)]=0;
     #Ia
-    xmin[((seedid-1)*5+4)]=0;
-    xmax[((seedid-1)*5+4)]=2000;
+    xmin[((seedid)*5+3)]=0;
+    xmax[((seedid)*5+3)]=2000;
 
-    #Latin Hypercubic Sampling
+#     print("xmin = ", xmin[840:850])
+#     print("xmax = ", xmax[840:850])
+#     #Latin Hypercubic Sampling
     x=lhsu(xmin,xmax,num_ens);
     x=x.T;
+
     for i in range(num_loc):
-        x[(i-1)*5+1:(i-1)*5+4,:]= np.round(x[(i-1)*5+1:(i-1)*5+4,:]);
-
-
+        x[i*5:i*5+3,:]= np.ceil(x[i*5:i*5+3,:]);
+        
     # seeding in other cities
-    C=M[:,170,1]; #first day
+    C=M[:,seedid,0]; #first day
+    C = C.reshape(C.shape[0],1)
+
+    seedid = 169
+
     for i in range(num_loc):
         if i !=seedid:
             #E
-            Ewuhan=x[(seedid-1)*5+2,:];
-            x[(i-1)*5+2,:]=np.round(C[i]*3*Ewuhan/pop[seedid]);
+            Ewuhan=x[(seedid)*5+1,:];
+            x[i*5+1,:]=np.round(C[i]*3*Ewuhan/pop[seedid,0],0);
+            #print(Ewuhan[:10])
+
             #Ia
-            Iawuhan=x[(seedid-1)*5+4,:];
-            x[(i-1)*5+4,:] = np.round(C[i]*3*Iawuhan/pop[seedid]);
+            Iawuhan=x[(seedid)*5+3,:];
+            x[i*5+3,:] = np.round(C[i]*3*Iawuhan/pop[seedid,0]);
+            #print(Iawuhan[:10])
+    #print(x[:7, :7])
     return x, paramax, paramin
