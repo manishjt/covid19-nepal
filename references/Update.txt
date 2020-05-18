@@ -1,0 +1,11 @@
+The model mimics the spread of disease in a network of communities that are connected by air or road. For Nepal, we have done the simulation considering two cases. First, the connectivity of the air network and second the connectivity via the road network. In both cases, the airports or major cities are the nodes of the graph connected by the air link or road link, represented by the edges.
+The first video shows the result using the air network, i.e. airports of Nepal. This is the initial model that we worked on. Since all the domestic and international flights are suspended now, this model does not accurately represent our findings.
+Similarly, in the second video, we have simulated the spread via the road network. Furthermore, in this simulation, we have used the dummy data for mobility and healing coefficients and because of that, we cannot draw an insightful conclusion. 
+Work remaining: We are continually working on improving our model to give better real-world outputs. However, we still lack some key and up to date geographic and demographic data to improve our model's robustness. The data we need is described below:
+1. Geographic and Demographic Data: 
+Population, Area, GPS coordinated and Distance of Road Links to the major settlement (Municipalities and Local Governments)
+2. Data related to health services.
+Available health service details (No of hospitals, doctors, ICU(Ventilators), and Hospital Beds) for each major settlement
+3. Mobility Data:
+Number of people and vehicle moving from one major settlement area to another
+4. Number of tests being done at each major settlement
