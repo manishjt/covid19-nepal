@@ -4,7 +4,7 @@ from seir import SEIR
 from initialize import initialize
 import numpy as np
 
-def inference(M, pop, incidence):
+def inference(M, pop, incidence, params):
     #Inference for the metapopulation SEIR model
     #Adapted from code by Sen Pei
 
@@ -14,9 +14,10 @@ def inference(M, pop, incidence):
     # load observation (14, 375)
 
     # Define constants
-    Td=9;                         # average reporting delay
-    a=1.85;                       # shape parameter of gamma distribution
-    b=Td/a;                       # scale parameter of gamma distribution
+    Td = params['Td']               # average reporting delay
+    a = params['a']                 # shape parameter of gamma distribution
+    b = Td/a;                       # scale parameter of gamma distribution
+    num_ensemble = params['num_ensemble']
 
     num_loc=M.shape[0];           # number of locations
     rnds=np.ceil(np.random.gamma(a,b,(10000,1))); # pre-generate gamma random numbers
@@ -37,25 +38,25 @@ def inference(M, pop, incidence):
        for t in range(num_times):
            OEV[l,t] = max(4,obs_truth[l,t]**2/4);
 
-    num_ens=300;#number of ensemble
+    num_ens=params['num_ensemble'];#number of ensemble
     pop0=np.matmul(pop.reshape((pop.shape[0],1)), np.ones([1,num_ens]));
     [x,paramax,paramin]=initialize(pop0,num_ens, M);#get parameter range
     num_var=x.shape[0];#number of state variables
 
 
      #IF setting
-    Iter=10; #number of iterations
+    Iter=params['num_iter']; #number of iterations
     num_para=paramax.shape[0];#number of parameters
     theta=np.zeros([num_para,Iter+1]);#mean parameters at each iteration
     para_post=np.zeros([num_para,num_ens,num_times,Iter]);#posterior parameters
     sig=np.zeros([1,Iter]);#variance shrinking parameter
-    alp=0.9;#variance shrinking rate
+    alp= params['alpha'];#variance shrinking rate
     SIG=np.power((paramax-paramin),2/4);#initial covariance of parameters
-    lambda_val=1.1;#inflation parameter to aviod divergence within each iteration
+    lambda_val= params['lambda_val'];#inflation parameter to aviod divergence within each iteration
 
 
     #start iteration for Iter round
-    Iter = 10
+
     for n in range(Iter):
        sig[0, n]=alp**(n-1);
        #generate new ensemble members using multivariate normal distribution
@@ -162,3 +163,4 @@ def inference(M, pop, incidence):
     parameters=theta[:,-1];#estimated parameters
     print(parameters)
     np.save('parameters.npz',parameters);
+    return parameters
