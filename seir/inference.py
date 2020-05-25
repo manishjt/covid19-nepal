@@ -4,7 +4,7 @@ from seir import SEIR
 from initialize import initialize
 import numpy as np
 
-def inference(M, pop, incidence, params):
+def inference(M, pop, incidence, params, priors, seeds):
     #Inference for the metapopulation SEIR model
     #Adapted from code by Sen Pei
 
@@ -40,7 +40,7 @@ def inference(M, pop, incidence, params):
 
     num_ens=params['num_ensemble'];#number of ensemble
     pop0=np.matmul(pop.reshape((pop.shape[0],1)), np.ones([1,num_ens]));
-    [x,paramax,paramin]=initialize(pop0,num_ens, M);#get parameter range
+    [x,paramax,paramin]=initialize(pop0,num_ens, M, priors, seeds);#get parameter range
     num_var=x.shape[0];#number of state variables
 
 
@@ -63,11 +63,11 @@ def inference(M, pop, incidence, params):
        Sigma=np.diag(sig[0, n]**2*SIG);
        if (n==0):
            #first guess of state space
-           [x,_,_]=initialize(pop0,num_ens, M);
+           [x,_,_]=initialize(pop0,num_ens, M, priors, seeds);
            para = x[-6:, :]
            theta[:,1]=np.mean(para,1);#mean parameter
        else:
-           [x,_, _]=initialize(pop0,num_ens, M);
+           [x,_, _]=initialize(pop0,num_ens, M, priors, seeds);
            para =np.random.multivariate_normal(theta[:,n],Sigma,(num_ens,1)).T;#generate parameters (multivariate random numbers)
            x[-6:,:]=para.reshape((6, num_ens));
 
