@@ -1,14 +1,14 @@
 import numpy as np
 
 import random
-def checkbound_ini(x,pop):
+def checkbound_ini(x,pop, priors):
    #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
-   betalow=0.8;betaup=1.5;#transmission rate
-   mulow=0.2;muup=1.0;#relative transmissibility
-   thetalow=1;thetaup=1.75;#movement factor
-   Zlow=2;Zup=5;#latency period
-   alphalow=0.02;alphaup=1.0;#reporting rate
-   Dlow=2;Dup=5;#infectious period
+   betalow=priors['betalow'];   betaup=priors['betaup'];#transmission rate
+   mulow=priors['mulow'];       muup=priors['muup'];#relative transmissibility
+   thetalow=priors['thetalow']; thetaup=priors['thetaup'];#movement factor
+   Zlow=priors['Zlow'];         Zup=priors['Zup'];#latency period
+   alphalow=priors['alphalow']; alphaup=priors['alphaup'];#reporting rate
+   Dlow=priors['Dlow'];         Dup=priors['Dup'];#infectious period
 
    xmin=np.array([betalow,mulow,thetalow,Zlow,alphalow,Dlow]);
    xmax=np.array([betaup,muup,thetaup,Zup,alphaup,Dup]);
@@ -45,14 +45,15 @@ def checkbound_ini(x,pop):
    return x
 
 
-def checkbound(x,pop):
+def checkbound(x,pop, priors):
    #S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
-   betalow=0.8;betaup=1.5;#transmission rate
-   mulow=0.2;muup=1.0;#relative transmissibility
-   thetalow=1;thetaup=1.75;#movement factor
-   Zlow=2;Zup=5;#latency period
-   alphalow=0.02;alphaup=1.0;#reporting rate
-   Dlow=2;Dup=5;#infectious period
+   betalow=priors['betalow'];   betaup=priors['betaup'];#transmission rate
+   mulow=priors['mulow'];       muup=priors['muup'];#relative transmissibility
+   thetalow=priors['thetalow']; thetaup=priors['thetaup'];#movement factor
+   Zlow=priors['Zlow'];         Zup=priors['Zup'];#latency period
+   alphalow=priors['alphalow']; alphaup=priors['alphaup'];#reporting rate
+   Dlow=priors['Dlow'];         Dup=priors['Dup'];#infectious period
+   
    xmin=np.array([betalow,mulow,thetalow,Zlow,alphalow,Dlow]);
    xmax=np.array([betaup,muup,thetaup,Zup,alphaup,Dup]);
    num_loc=pop.shape[0];

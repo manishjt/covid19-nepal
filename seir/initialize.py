@@ -10,24 +10,24 @@ def lhsu(xmin,xmax,nsample):
       s[:,j] = xmin[j] + np.multiply(P, (xmax[j]-xmin[j]));
    return s
 
-def initialize(pop,num_ens, M):
+def initialize(pop,num_ens, M, initial_priors, seed):
     #Initialize the metapopulation SEIRS model
     #inputs: pop -> population matrix, num_ens -> number of ensembles, M -> mobility matrix
     num_loc=pop.shape[0];
     # num_var=5*num_oc+6;
     # S,E,Is,Ia,obs,...,beta,mu,theta,Z,alpha,D
     #prior range
-    Slow=1.0;Sup=1.0;           # susceptible fraction
-    Elow=0;Eup=0;               # exposed
-    Irlow=0;Irup=0;             # documented infection
-    Iulow=0;Iuup=0;             # undocumented infection
-    obslow=0;obsup=0;           # reported case
-    betalow=0.8;betaup=1.5;     # transmission rate
-    mulow=0.2;muup=1.0;         # relative transmissibility
-    thetalow=1;thetaup=1.75;    # movement factor
-    Zlow=2;Zup=5;               # latency period
-    alphalow=0.02;alphaup=1.0;  # reporting rate
-    Dlow=2;Dup=5;               # infectious period
+    Slow=initial_priors['Slow'];        Sup=initial_priors['Sup'];           # susceptible fraction
+    Elow=initial_priors['Elow'];        Eup=initial_priors['Eup'];               # exposed
+    Irlow=initial_priors['Irlow'];      Irup=initial_priors['Irup'];             # documented infection
+    Iulow=initial_priors['Iulow'];      Iuup=initial_priors['Iuup'];             # undocumented infection
+    obslow=initial_priors['obslow'];    obsup=initial_priors['obsup'];           # reported case
+    betalow=initial_priors['betalow'];  betaup=initial_priors['betaup'];     # transmission rate
+    mulow=initial_priors['mulow'];      muup=initial_priors['muup'];         # relative transmissibility
+    thetalow=initial_priors['thetalow'];thetaup=initial_priors['thetaup'];    # movement factor
+    Zlow=initial_priors['Zlow'];        Zup=initial_priors['Zup'];               # latency period
+    alphalow=initial_priors['alphalow'];alphaup=initial_priors['alphaup'];  # reporting rate
+    Dlow=initial_priors['Dlow'];        Dup=initial_priors['Dup'];               # infectious period
 
     #range of model state including variables and parameters
     xmin=[];
@@ -56,7 +56,7 @@ def initialize(pop,num_ens, M):
 
     # seeding in Wuhan
     # Wuhan - 170
-    seedid = 169; #counting from 0
+    seedid = seed; #counting from 0
     #E
     xmin[(seedid)*5+1]=0;
     xmax[(seedid)*5+1]=2000;

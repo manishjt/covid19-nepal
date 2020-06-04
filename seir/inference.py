@@ -4,7 +4,7 @@ from seir import SEIR
 from initialize import initialize
 import numpy as np
 
-def inference(M, pop, incidence, params, priors, seeds):
+def inference(M, pop, incidence, params, priors, initial_prior, seeds):
     #Inference for the metapopulation SEIR model
     #Adapted from code by Sen Pei
 
@@ -40,7 +40,7 @@ def inference(M, pop, incidence, params, priors, seeds):
 
     num_ens=params['num_ensemble'];#number of ensemble
     pop0=np.matmul(pop.reshape((pop.shape[0],1)), np.ones([1,num_ens]));
-    [x,paramax,paramin]=initialize(pop0,num_ens, M, priors, seeds);#get parameter range
+    [x,paramax,paramin]=initialize(pop0,num_ens, M, initial_priors, seeds);#get parameter range
     num_var=x.shape[0];#number of state variables
 
 
@@ -74,7 +74,7 @@ def inference(M, pop, incidence, params, priors, seeds):
        #correct lower/upper bounds of the parameters
 
        print("IN iter loop: ", n, "Shape of x: ", x.shape)
-       x=checkbound_ini(x,pop0);
+       x=checkbound_ini(x,pop0, priors);
        #Begin looping through observations
        x_prior=np.zeros([num_var,num_ens,num_times]) #prior
        x_post=np.zeros([num_var,num_ens,num_times]);#posterior
@@ -85,7 +85,7 @@ def inference(M, pop, incidence, params, priors, seeds):
            x_mean = np.mean(x,1)
            temp1 = x_mean.reshape(x_mean.shape[0],1) * np.ones([1, num_ens])
            x=temp1+lambda_val*(x-temp1);
-           x=checkbound(x,pop);
+           x=checkbound(x,pop, priors);
            #integrate forward
            x,pop=SEIR(x,M,pop,t,pop0);
            #print(x[:5,:5], H[:5, :5])
@@ -149,7 +149,7 @@ def inference(M, pop, incidence, params, priors, seeds):
                dx= np.matmul(rr, dy.T);
                x=x+dx;
                #Corrections to DA produced aphysicalities
-               x = checkbound(x,pop);
+               x = checkbound(x,pop, priors);
 
 
            x_post[:,:,t]=x;
@@ -162,5 +162,6 @@ def inference(M, pop, incidence, params, priors, seeds):
 
     parameters=theta[:,-1];#estimated parameters
     print(parameters)
-    np.save('parameters.npz',parameters);
+    np.save('output/parameters.npz',parameters);
+    np.save('output/theta.npz', theta)
     return parameters

@@ -316,6 +316,12 @@ def SEIR(x, M , pop, ts, pop0):
         obs=Incidence[:,:,tcnt+1];
         tcnt=tcnt+1;
         print("Seir iteration:", t)
+    np.save('output/seir_s_'+str(ts)+'.npz', S)
+    np.save('output/seir_e_'+str(ts)+'.npz', E)
+    np.save('output/seir_is_'+str(ts)+'.npz', Is)
+    np.save('output/seir_ia_'+str(ts)+'.npz', Ia)
+    np.save('output/seir_incidence_'+str(ts)+'.npz', Incidence)
+    np.save('output/seir_obs_'+str(ts)+'.npz', obs)
 
     ##update x
     x[Sidx,:]=S[:,:,tcnt];
