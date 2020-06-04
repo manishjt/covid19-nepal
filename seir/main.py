@@ -26,7 +26,7 @@ priors['alphalow']=0.02;priors['alphaup']=1.0;#reporting rate
 priors['Dlow']=2;       priors['Dup']=5;#infectious period
 
 
-intial_prior = {}
+initial_prior = {}
 initial_prior['Slow']=1.0;      initial_prior['Sup']=1.0;           # susceptible fraction
 initial_prior['Elow']=0;        initial_prior['Eup']=0;               # exposed
 initial_prior['Irlow']=0;       initial_prior['Irup']=0;             # documented infection
